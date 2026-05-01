@@ -1,87 +1,47 @@
-# text-cleaning-APi
-from fastapi import FastAPI, Body, Header
-from fastapi.middleware.cors import CORSMiddleware
-import re
+🧹 Text-Cleaning API
+A lightweight and efficient FastAPI based tool designed for text preprocessing. This API helps you clean noisy text by removing unwanted symbols, handling extra whitespaces, and normalizing newlines—making it perfect for NLP tasks or general data cleaning.
+✨ Features
+Clean All Mode: Automatically removes symbols, normalizes spaces, removes newlines, and converts text to lowercase in one go.
+Custom Mode: Fine-grained control to toggle specific cleaning operations based on your needs.
+RapidAPI Compatible: Includes necessary CORS middleware and header support for seamless integration with RapidAPI.
+Fast & Reliable: Built with FastAPI for high performance and easy scalability.
+🚀 Getting Started
+1. Clone the Repository
+git clone https://github.com/Makhal-Architect/text-cleaning-APi.git
+cd text-cleaning-APi
+2. Install Dependencies
+Make sure you have Python installed, then run:
+pip install fastapi uvicorn
 
-app = FastAPI()
+3. Run the Server
+uvicorn main:app --reload
+The API will be available at http://127.0.0.1:8000.
+🛠 API Documentation
+Endpoint: /process
+Method: POST
+Request Body Parameters:
+Parameter Type Description
+input_text String The raw text you want to clean.
+clean_all Boolean If true, applies all cleaning rules automatically.
+remove_space_newline Boolean Removes tabs, newlines, and extra spaces (Custom mode).
+remove_symbols Boolean Removes all non-alphanumeric characters (Custom mode).
+to_lowercase Boolean Converts
 
-# ✅ REQUIRED for RapidAPI browser console
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-def apply_cleaning(
-    text: str,
-    remove_newlines: bool = False,
-    normalize_spaces: bool = False,
-    remove_symbols: bool = False,
-    to_lower: bool = False,
-):
-    if remove_newlines:
-        text = text.replace("\n", " ").replace("\t", " ")
-    if remove_symbols:
-        text = re.sub(r"[^a-zA-Z0-9 ]", "", text)
-    if normalize_spaces:
-        text = " ".join(text.split())
-    if to_lower:
-        text = text.lower()
-    return text
-
-
-@app.post("/process")
-def process_text(
-    input_text: str = Body(...),
-
-    # FIRST / ROOT decision
-    clean_all: bool = Body(...),
-
-    # Custom options (used ONLY if clean_all = false)
-    remove_space_newline: bool = Body(False),
-    remove_symbols: bool = Body(False),
-    to_lowercase: bool = Body(False),
-
-    # ✅ RapidAPI headers (accepted, not used)
-    x_rapidapi_key: str = Header(None),
-    x_rapidapi_host: str = Header(None),
-):
-    # ✅ Safety check (minimal)
-    if not input_text.strip():
-        return {"status": "error", "message": "input_text cannot be empty"}
-
-    # 🔴 HARD STOP PATH
-    if clean_all:
-        final_text = apply_cleaning(
-            input_text,
-            remove_newlines=True,
-            normalize_spaces=True,
-            remove_symbols=True,
-            to_lower=True,
-        )
-        return {
-            "status": "complete",
-            "mode": "clean_all",
-            "result": final_text,
-        }
-
-    # 🟢 CUSTOM PATH
-    final_text = apply_cleaning(
-        input_text,
-        remove_newlines=remove_space_newline,
-        normalize_spaces=remove_space_newline,
-        remove_symbols=remove_symbols,
-        to_lower=to_lowercase,
-    )
-
-    return {
-        "status": "complete",
-        "mode": "custom",
-        "result": final_text,
-    }
-
-
-@app.get("/")
-def root():
-    return {"status": "online"}
+Example Request (JSON):
+{
+  "input_text": "Hello @World!!! \n This is   FastAPI.",
+  "clean_all": false,
+  "remove_space_newline": true,
+  "remove_symbols": true,
+  "to_lowercase": true
+}
+Example Response:
+{
+  "status": "complete",
+  "mode": "custom",
+  "result": "hello world this is fastapi"
+}
+📂 Project Structure
+main.py - The core FastAPI application logic.
+.gitignore - Pre-configured to keep your repo clean from Python junk files.
+README.md - Documentation for the project.
